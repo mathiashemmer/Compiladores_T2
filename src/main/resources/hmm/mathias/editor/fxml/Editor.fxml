@@ -23,8 +23,8 @@
                     <menus>
                         <Menu mnemonicParsing="false" text="Arquivo">
                             <items>
-                                <MenuItem mnemonicParsing="false" text="Novo" />
-                                <MenuItem mnemonicParsing="false" text="Abrir" />
+                                <MenuItem fx:id="mnuNovoArquivo" mnemonicParsing="false" onAction="#NovoArquivo" text="Novo" />
+                                <MenuItem mnemonicParsing="false" onAction="#AbrirArquivo" text="Abrir" />
                                 <MenuItem mnemonicParsing="false" text="Salvar" />
                                 <MenuItem mnemonicParsing="false" text="Salvar Como" />
                                 <MenuItem mnemonicParsing="false" text="Sair" />
@@ -55,7 +55,7 @@
                                         <Insets left="5.0" right="5.0" />
                                     </padding>
                                     <children>
-                                        <Button fx:id="btnNewFile" maxHeight="25.0" maxWidth="25.0" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" onAction="#printHelloWorld" style="-fx-background-color: 0;">
+                                        <Button fx:id="btnNovoArquivo" maxHeight="25.0" maxWidth="25.0" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" onAction="#NovoArquivo" style="-fx-background-color: 0;">
                                             <graphic>
                                                 <ImageView fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
                                                     <image>
@@ -63,7 +63,7 @@
                                                     </image></ImageView>
                                             </graphic>
                                         </Button>
-                                        <Button maxHeight="25.0" maxWidth="25.0" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" style="-fx-background-color: 0;">
+                                        <Button fx:id="btnAbrirArquivo" maxHeight="25.0" maxWidth="25.0" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" onAction="#AbrirArquivo" style="-fx-background-color: 0;">
                                             <graphic>
                                                 <ImageView fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
                                                     <image>
