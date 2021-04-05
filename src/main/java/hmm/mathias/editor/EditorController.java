@@ -1,63 +1,176 @@
 package hmm.mathias.editor;
 
+import hmm.mathias.Main;
 import hmm.mathias.compiler.*;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
+import javafx.event.EventHandler;
+import javafx.event.EventType;
 import javafx.fxml.FXML;
-import javafx.scene.control.TextArea;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.input.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
-import java.io.Console;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.StringReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Scanner;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Optional;
 
 public class EditorController {
     private boolean NovoArquivo = true;
-    private boolean ArquivoEditado = false;
-
+    private String fileHash = CriarHashDeAlteracao("");
+    private File arquivoAtual;
 
     @FXML
     private TextArea txtCode;
     @FXML
     private TextArea txtCodeOutput;
+    @FXML
+    private TextField txtLineNumber;
+
+    @FXML
+    private MenuItem mnuNovoArquivo;
+    @FXML
+    private MenuItem mnuAbrirArquivo;
+    @FXML
+    private MenuItem mnuSalvarArquivo;
+
+    @FXML public void initialize(){
+        txtLineNumber.setEditable(false);
+        txtCodeOutput.setEditable(false);
+
+        txtCode.setOnKeyReleased(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent event) {
+                int caretPos = txtCode.getCaretPosition();
+                String toCaret = txtCode.getText().substring(0, caretPos);
+                int lastLBBeforeCaret = Math.max(0, toCaret.lastIndexOf("\n"));
+
+                String lineno = String.valueOf(toCaret.chars().filter(ch -> ch == '\n').count());
+                String caretStringLine = txtCode.getText().substring(lastLBBeforeCaret, caretPos);
+
+                String txt = "L: " + lineno  + " | C:" + caretStringLine.length();
+                txtLineNumber.setText(txt);
+            }
+        });
+
+        KeyCombination atalhoSalvar = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN);
+        KeyCombination atalhoNovo = new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN);
+        KeyCombination atalhoAbrir = new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN);
+
+        mnuNovoArquivo.setAccelerator(atalhoNovo);
+        mnuAbrirArquivo.setAccelerator(atalhoAbrir);
+        mnuSalvarArquivo.setAccelerator(atalhoSalvar);
+    }
 
     @FXML
     private void AbrirArquivo(){
+        if(!OnMudancaDeArquivo())
+            return;
+
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Escolha um arquivo de texto");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
-        File selectedFile = fileChooser.showOpenDialog(new Stage());
-        if(selectedFile != null){
+        arquivoAtual = fileChooser.showOpenDialog(Main.primaryStage);
+        if(arquivoAtual != null){
             NovoArquivo = false;
-            txtCode.setText(LerArquivoParaEditor(selectedFile));
+            txtCode.setText(LerArquivoParaEditor(arquivoAtual));
+            fileHash = CriarHashDeAlteracao(txtCode.getText());
+            Main.primaryStage.setTitle("Compilador - " + arquivoAtual.getName());
         }else{
 
         }
     }
-
     @FXML
     private void NovoArquivo(){
+        if(!OnMudancaDeArquivo())
+            return;
+
         txtCode.setText("");
         txtCodeOutput.setText("");
+        Main.primaryStage.setTitle("Compilador");
+        arquivoAtual = null;
+        fileHash = CriarHashDeAlteracao("");
 
         NovoArquivo = true;
-        ArquivoEditado = false;
+    }
+    @FXML
+    private boolean SalvarArquivo(){
+        try {
+            String caminhoDoArquivo = "";
+
+            if(NovoArquivo){
+                FileChooser fileChooser = new FileChooser();
+                arquivoAtual = fileChooser.showSaveDialog(Main.primaryStage);
+                if(arquivoAtual == null)
+                    return false;
+            }
+
+            caminhoDoArquivo = arquivoAtual.getAbsolutePath();
+
+            String codigo = txtCode.getText();
+
+            FileWriter myWriter = new FileWriter(caminhoDoArquivo);
+            myWriter.write(codigo);
+            myWriter.close();
+
+            fileHash = CriarHashDeAlteracao(codigo);
+            NovoArquivo = false;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+    @FXML
+    private boolean SalvarArquivoComo(){
+        try {
+            String caminhoDoArquivo = "";
+
+            FileChooser fileChooser = new FileChooser();
+            arquivoAtual = fileChooser.showSaveDialog(Main.primaryStage);
+            if(arquivoAtual == null)
+                return false;
+
+            caminhoDoArquivo = arquivoAtual.getAbsolutePath();
+            caminhoDoArquivo += arquivoAtual.getName();
+
+            String codigo = txtCode.getText();
+
+            FileWriter myWriter = new FileWriter(caminhoDoArquivo);
+            myWriter.write(codigo);
+            myWriter.close();
+
+            fileHash = CriarHashDeAlteracao(codigo);
+            NovoArquivo = false;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return true;
     }
 
+    public void OnFechar(WindowEvent ev){
+        if(!OnMudancaDeArquivo())
+            ev.consume();
+    }
 
     @FXML
     private void Compile(ActionEvent event) throws ParseException {
-        StringReader reader = new StringReader(txtCode.getText());
         txtCodeOutput.setText("");
+        if(txtCode.getText().replace(" ", "").replace("\n", "").equals(""))
+            return;
+
+        StringReader reader = new StringReader(txtCode.getText());
 
         FoxtranTokenManager lexicalTester = new FoxtranTokenManager(new JavaCharStream(reader));
         Token currentToken = null;
-        boolean error = false;
-
+        boolean houveErro = false;
         do{
             try{
                 currentToken = lexicalTester.getNextToken();
@@ -66,12 +179,17 @@ public class EditorController {
                     continue;
 
                 String newLexema = GetTokenType(currentToken) + " '" + currentToken.toString()+ "' em (L:"+currentToken.beginLine+",C:"+currentToken.beginColumn+") ID:" + currentToken.kind + "\n";
-                txtCodeOutput.setText(txtCodeOutput.getText() + newLexema);
+                txtCodeOutput.appendText(newLexema);
             }catch (TokenMgrError e){
-                txtCodeOutput.setText(txtCodeOutput.getText() + e.getMessage());
+                txtCodeOutput.appendText("\n"+e.getMessage());
+                houveErro = true;
                 continue;
             }
         } while(currentToken.kind != FoxtranTokenManager.EOF);
+
+        if(!houveErro){
+            txtCodeOutput.appendText("\n---STATUS---\nCompilacao concluida com sucesso!");
+        }
     }
 
     String GetTokenType(Token token){
@@ -82,7 +200,7 @@ public class EditorController {
 
         if(tokenId >= 6 && tokenId < 26)
             return "<PALAVRA RESERVADA>";
-        if(tokenId >= 26 && tokenId < 50)
+        if(tokenId >= 26 && tokenId < 52)
             return "<SIMBOLO RESERVADO>";
 
         //>50
@@ -99,5 +217,74 @@ public class EditorController {
             return "";
         }
 
+    }
+
+    private String CriarHashDeAlteracao(String dados){
+        try {
+            MessageDigest shaDigest = MessageDigest.getInstance("SHA-256");
+
+            byte[] bytes = shaDigest.digest(dados.getBytes());
+            StringBuilder sb = new StringBuilder();
+            for(int i=0; i< bytes.length ;i++)
+            {
+                sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    private boolean OnMudancaDeArquivo(){
+        if(ArquivoAlterado()){
+            Optional<ButtonType> resposta = MostrarPopUpDeSalvar();
+
+            boolean ehSim = resposta.isPresent() && resposta.get().getButtonData().equals(ButtonBar.ButtonData.YES);
+            boolean ehCancelar = resposta.isPresent() && resposta.get().getButtonData().equals(ButtonBar.ButtonData.CANCEL_CLOSE);
+
+            if(ehCancelar)
+                return false;
+
+            if(ehSim){
+                boolean deuBoa = true;
+                Optional<ButtonType> modoDeSalvar = MostrarPopUpDeModoDeSalvar();
+                if(modoDeSalvar.isPresent() && modoDeSalvar.get().getButtonData().equals(ButtonBar.ButtonData.YES))
+                    deuBoa = SalvarArquivo();
+                else
+                    deuBoa =SalvarArquivoComo();
+
+                if(!deuBoa)
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    private Optional<ButtonType> MostrarPopUpDeSalvar(){
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.getButtonTypes().remove(ButtonType.OK);
+        alert.getButtonTypes().add(new ButtonType("Sim",ButtonBar.ButtonData.YES));
+        alert.getButtonTypes().add(new ButtonType("Nao",ButtonBar.ButtonData.NO));
+        alert.getButtonTypes().add(new ButtonType("Cancelar",ButtonBar.ButtonData.CANCEL_CLOSE));
+        alert.setTitle("Salvar arquivos");
+        alert.setContentText(String.format("Modificacoes foram feitas, deseja salvar o arquivo antes de fechar?"));
+        alert.initOwner(Main.primaryStage.getOwner());
+        return alert.showAndWait();
+    }
+
+    private Optional<ButtonType> MostrarPopUpDeModoDeSalvar(){
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.getButtonTypes().remove(ButtonType.OK);
+        alert.getButtonTypes().add(new ButtonType("Salvar",ButtonBar.ButtonData.YES));
+        alert.getButtonTypes().add(new ButtonType("Salvar como",ButtonBar.ButtonData.NO));
+        alert.setTitle("Salvar arquivos");
+        alert.setContentText(String.format("Como deseja efetuar a gravacao?"));
+        alert.initOwner(Main.primaryStage.getOwner());
+        return alert.showAndWait();
+    }
+
+    private boolean ArquivoAlterado(){
+        return(!fileHash.equals(CriarHashDeAlteracao(txtCode.getText())));
     }
 }

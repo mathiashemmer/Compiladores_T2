@@ -1,0 +1,101 @@
+options {
+  JAVA_UNICODE_ESCAPE = true;
+  ERROR_REPORTING = false;
+  STATIC = false;
+  COMMON_TOKEN_ACTION = true;
+  TOKEN_FACTORY = "Token";
+  JDK_VERSION = "1.14";
+  OUTPUT_DIRECTORY = "C:\\Users\\MathiasNB\\IdeaProjects\\L2021_Compiler\\src\\main\\java\\hmm\\mathias\\compiler";
+}
+
+PARSER_BEGIN(Foxtran)
+package hmm.mathias.compiler;
+
+public class Foxtran {
+    public static void main(String[] args) {
+        try {
+            new Foxtran(new java.io.StringReader(args[0])).Programa();
+        } catch (Throwable e) {
+            System.out.println("Syntax check failed: " + e.getMessage());
+        }
+    }
+}
+
+PARSER_END(Foxtran)
+
+TOKEN_MGR_DECLS : {
+  void CommonTokenAction(Token token) {
+  }
+}
+
+SKIP: { " " | "\r" | "\n\r" | "\t" | "\f" }
+
+/*Palavras Reservadas */
+TOKEN [IGNORE_CASE] : {
+    <PROGRAM : "program">
+    | <DEFINE : "define">
+    | <NOT : "not">
+    | <VARIABLE : "variable">
+    | <IS : "is">
+    | <NATURAL : "natural">
+    | <REAL : "real">
+    | <CHAR : "char">
+    | <BOOLEAN : "boolean">
+    | <EXECUTE : "execute">
+    | <GET : "get">
+    | <PUT : "put">
+    | <LOOP : "loop">
+    | <WHILE : "while">
+    | <DO : "do">
+    | <TO : "to">
+    | <SET : "set">
+    | <VERIFY : "verify">
+    | <TRUE : "true">
+    | <FALSE : "false">
+}
+
+/* Simbolos */
+TOKEN :
+{
+    < LPAREN: "(" >
+    | < RPAREN: ")" >
+    | < LCOL: "{" >
+    | < RCOL: "}" >
+    | < LCHAVE: "[" >
+    | < RCHAVE: "]" >
+    | < PONTOVIRGULA: ";" >
+    | < VIRGULA: "," >
+    | < PONTO: "." >
+    | < MENORIGUAL: "<=" >
+    | < EXCLAMACAO: "!" >
+    | < MAIS: "+" >
+    | < MENOS: "-" >
+    | < ASTERISCO: "*" >
+    | < MAIORIGUAL: ">=" >
+    | < BARRA: "/" >
+    | < POTENCIA: "**" >
+    | < DIVISAOINTEIRA: "%" >
+    | < RESTODIVISAO: "%$" >
+    | < LOGICOE: "&" >
+    | < LOGICOOU: "|" >
+    | < IGUALDADE: "==" >
+    | < DIFERENCA: "!=" >
+    | < MAIORQUE: ">" >
+    | < MENORQUE: "<" >
+    | < DOGSBOLLOCKS: ":-" >
+}
+
+TOKEN:
+{
+  <IDENTIFICADOR: ((<LETRA>)|"_") ( ((<LETRA>)|"_"|(<DIGITO>))? )* >
+  | <INTEIROS: (<DIGITO>){1,3} >
+  | <FLUTUANTE: (<DIGITO>){1,5}","(<DIGITO>){1,3}>
+  | <LITERAL: "\"" (~["\""])*"\"" | "\'" (~["\'"])*"\'">
+  | <LETRA: ["A"-"Z","a"-"z"]>
+  | <DIGITO: ["0"-"9"]>
+  | <LINEBREAK: "\n">
+}
+
+
+
+void Programa(): {} { <EOF>}

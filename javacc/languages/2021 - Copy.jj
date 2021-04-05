@@ -1,0 +1,158 @@
+PARSER_BEGIN(DVV)
+package hmm.mathias.compiler;
+
+public class DVV {
+    public static void main(String[] args) {
+        try {
+            new DVV(new java.io.StringReader(args[0])).Programa();
+            System.out.println("Syntax is okay");
+        } catch (Throwable e) {
+            // Catching Throwable is ugly but JavaCC throws Error objects!
+            System.out.println("Syntax check failed: " + e.getMessage());
+        }
+    }
+}
+
+PARSER_END(DVV)
+
+SKIP: { " " | "\r" | "\n\r" | "\t" | "\f" }
+
+SPECIAL_TOKEN : {
+    <COMENTARIO_LINHA : "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>
+    | <COMENTARIO_BLOCO : "/*" (~["*"])* "*" ("*" | (~["*","/"] (~["*"])* "*"))* "/">
+}
+
+/*Palavras Reservadas */
+TOKEN : {
+    <PROGRAM : "program"> 
+    | <DEFINE : "define">
+    | <NOT : "not">
+    | <VARIABLE : "variable">
+    | <IS : "is">
+    | <NATURAL : "natural">
+    | <REAL : "real">
+    | <CHAR : "char">
+    | <BOOLEAN : "boolean">
+    | <EXECUTE : "execute">
+    | <GET : "get">
+    | <PUT : "put">
+    | <LOOP : "loop">
+    | <WHILE : "while">
+    | <TRUE : "true">
+    | <FALSE : "false">
+    | <DO : "do">
+    | <TO : "to">
+    | <SET : "set">
+    | <VERIFY : "verify">
+}
+
+/* Simbolos */
+TOKEN : 
+{
+    < LPAREN: "(" >
+    | < RPAREN: ")" >
+    | < LCOL: "{" >
+    | < RCOL: "}" >
+    | < LCHAVE: "[" >
+    | < RCHAVE: "]" >
+    | < PONTOVIRGULA: ";" >
+    | < VIRGULA: "," >
+    | < PONTO: "." >
+    | < MENORIGUAL: "<=" >
+    | < EXCLAMACAO: "!" >
+    | < MAIS: "+" >
+    | < MENOS: "-" >
+    | < ASTERISCO: "*" >
+    | < MAIORIGUAL: ">=" >
+    | < BARRA: "/" >
+    | < POTENCIA: "**" >
+    | < DIVISAOINTEIRA: "%" >
+    | < RESTODIVISAO: "%$" >
+    | < LOGICOE: "&" >
+    | < LOGICOOU: "|" >
+    | < IGUALDADE: "==" >
+    | < DIFERENCA: "!=" >
+    | < MAIORQUE: ">" >
+    | < MENORQUE: "<" >
+    | < DOGSBOLLOCKS: ":-" >
+
+}
+TOKEN : /* LITERALS */
+{
+    < DECIMAL_LITERARL : ["1"-"9"] (["0"-"9"])* >
+    | < FLOATING_POINT_LITERAL: (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? >
+    | < #EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+ >
+|
+  < CHARACTER_LITERAL:
+      "'"
+      (   (~["'","\\","\n","\r"])
+        | ("\\"
+            ( ["n","t","b","r","f","\\","'","\""]
+            | ["0"-"7"] ( ["0"-"7"] )?
+            | ["0"-"3"] ["0"-"7"] ["0"-"7"]
+            )
+          )
+      )
+      "'"
+  >
+|
+  < STRING_LITERAL:
+      "\""
+      (   (~["\"","\\","\n","\r"])
+        | ("\\"
+            ( ["n","t","b","r","f","\\","'","\""]
+            | ["0"-"7"] ( ["0"-"7"] )?
+            | ["0"-"3"] ["0"-"7"] ["0"-"7"]
+            )
+          )
+      )*
+      "\""
+  >
+}
+
+TOKEN : /* IDENTIFIERS */
+{
+  < IDENTIFIER: <LETTER> (<LETTER>|<DIGIT>)* >
+|
+  < #LETTER:
+      [
+       "\u0024",
+       "\u0041"-"\u005a",
+       "\u005f",
+       "\u0061"-"\u007a",
+       "\u00c0"-"\u00d6",
+       "\u00d8"-"\u00f6",
+       "\u00f8"-"\u00ff",
+       "\u0100"-"\u1fff",
+       "\u3040"-"\u318f",
+       "\u3300"-"\u337f",
+       "\u3400"-"\u3d2d",
+       "\u4e00"-"\u9fff",
+       "\uf900"-"\ufaff"
+      ]
+  >
+|
+  < #DIGIT:
+      [
+       "\u0030"-"\u0039",
+       "\u0660"-"\u0669",
+       "\u06f0"-"\u06f9",
+       "\u0966"-"\u096f",
+       "\u09e6"-"\u09ef",
+       "\u0a66"-"\u0a6f",
+       "\u0ae6"-"\u0aef",
+       "\u0b66"-"\u0b6f",
+       "\u0be7"-"\u0bef",
+       "\u0c66"-"\u0c6f",
+       "\u0ce6"-"\u0cef",
+       "\u0d66"-"\u0d6f",
+       "\u0e50"-"\u0e59",
+       "\u0ed0"-"\u0ed9",
+       "\u1040"-"\u1049"
+      ]
+  >
+}
+
+void Programa(): {} { ComentarioInicial() "program" <EOF> }
+void ComentarioInicial(): {} { (":-" (Nome())? "\n")? }
+void Nome(): {} {<IDENTIFIER> (<IDENTIFIER>)*}

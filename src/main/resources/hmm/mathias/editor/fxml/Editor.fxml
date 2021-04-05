@@ -24,9 +24,9 @@
                         <Menu mnemonicParsing="false" text="Arquivo">
                             <items>
                                 <MenuItem fx:id="mnuNovoArquivo" mnemonicParsing="false" onAction="#NovoArquivo" text="Novo" />
-                                <MenuItem mnemonicParsing="false" onAction="#AbrirArquivo" text="Abrir" />
-                                <MenuItem mnemonicParsing="false" text="Salvar" />
-                                <MenuItem mnemonicParsing="false" text="Salvar Como" />
+                                <MenuItem fx:id="mnuAbrirArquivo" mnemonicParsing="false" onAction="#AbrirArquivo" text="Abrir" />
+                                <MenuItem fx:id="mnuSalvarArquivo" mnemonicParsing="false" onAction="#SalvarArquivo" text="Salvar" />
+                                <MenuItem mnemonicParsing="false" onAction="#SalvarArquivoComo" text="Salvar Como" />
                                 <MenuItem mnemonicParsing="false" text="Sair" />
                             </items>
                         </Menu>
@@ -162,7 +162,7 @@
                 <Insets right="25.0" />
             </BorderPane.margin>
             <children>
-                <TextField>
+                <TextField fx:id="txtLineNumber">
                     <HBox.margin>
                         <Insets bottom="5.0" left="25.0" right="5.0" top="5.0" />
                     </HBox.margin>

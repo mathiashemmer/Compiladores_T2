@@ -107,7 +107,7 @@ public interface FoxtranConstants {
   /** RegularExpression Id. */
   int INTEIROS = 53;
   /** RegularExpression Id. */
-  int FLUTUANTES = 54;
+  int FLUTUANTE = 54;
   /** RegularExpression Id. */
   int LITERAL = 55;
   /** RegularExpression Id. */
@@ -176,7 +176,7 @@ public interface FoxtranConstants {
     "\":-\"",
     "<IDENTIFICADOR>",
     "<INTEIROS>",
-    "<FLUTUANTES>",
+    "<FLUTUANTE>",
     "<LITERAL>",
     "<LETRA>",
     "<DIGITO>",

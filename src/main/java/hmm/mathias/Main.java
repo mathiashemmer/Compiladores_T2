@@ -1,5 +1,6 @@
 package hmm.mathias;
 
+import hmm.mathias.editor.EditorController;
 import javafx.application.Application;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -13,6 +14,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 public class Main extends Application {
+    public static Stage primaryStage;
 
     public static void main(String[] args) {
         launch(args);
@@ -20,20 +22,23 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Parent root = null;
+        this.primaryStage = primaryStage;
         try{
-            root = FXMLLoader.load(getClass().getResource("/hmm/mathias/editor/fxml/Editor.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/hmm/mathias/editor/fxml/Editor.fxml"));
+            Parent root = (Parent) loader.load();
+            EditorController controller = loader.getController();
+            primaryStage.setOnCloseRequest(controller::OnFechar);
+            primaryStage.setScene(new Scene(root));
+            primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/icon/sketch.png")));
+            primaryStage.setMaximized(true);
+            primaryStage.setTitle("Compilador");
+            primaryStage.show();
+
         }catch(Exception ex){
-            System.out.println( "Exception on FXMLLoader.load()" );
-            System.out.println( "  * " + ex );
-            System.out.println( "    ----------------------------------------\n" );
+            System.out.println(ex.getMessage());
             throw ex;
         }
-
-        Scene scene = new Scene(root);
-        primaryStage.setScene(scene);
-        primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/icon/sketch.png")));
-        primaryStage.setMaximized(true);
-        primaryStage.show();
     }
+
+
 }
