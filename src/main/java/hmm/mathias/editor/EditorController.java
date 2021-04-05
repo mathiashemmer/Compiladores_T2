@@ -186,7 +186,7 @@ public class EditorController {
                 String newLexema = GetTokenType(currentToken) + " '" + currentToken.toString()+ "' em (L:"+currentToken.beginLine+",C:"+currentToken.beginColumn+") ID:" + currentToken.kind + "\n";
                 txtCodeOutput.appendText(newLexema);
             }catch (TokenMgrError e){
-                txtCodeOutput.appendText("\n"+e.getMessage());
+                txtCodeOutput.appendText(e.getMessage());
                 houveErro = true;
                 continue;
             }
