@@ -74,6 +74,9 @@ public class EditorController {
             return;
 
         FileChooser fileChooser = new FileChooser();
+
+        String defaultPath =  System.getProperty("user.dir");
+        fileChooser.initialDirectoryProperty().set(new File(defaultPath));
         fileChooser.setTitle("Escolha um arquivo de texto");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
         arquivoAtual = fileChooser.showOpenDialog(Main.primaryStage);
@@ -106,6 +109,8 @@ public class EditorController {
 
             if(NovoArquivo){
                 FileChooser fileChooser = new FileChooser();
+                String defaultPath =  System.getProperty("user.dir");
+                fileChooser.initialDirectoryProperty().set(new File(defaultPath));
                 arquivoAtual = fileChooser.showSaveDialog(Main.primaryStage);
                 if(arquivoAtual == null)
                     return false;
