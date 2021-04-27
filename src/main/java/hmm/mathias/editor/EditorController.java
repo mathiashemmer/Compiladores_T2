@@ -17,13 +17,14 @@ import javafx.stage.WindowEvent;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 
 public class EditorController {
     private boolean NovoArquivo = true;
-    private String fileHash = CriarHashDeAlteracao("");
+    private String fileHash = CryptoService.CriarHashDeAlteracao("");
     private File arquivoAtual;
 
     @FXML
@@ -53,8 +54,8 @@ public class EditorController {
 
                 String lineno = String.valueOf(toCaret.chars().filter(ch -> ch == '\n').count());
                 String caretStringLine = txtCode.getText().substring(lastLBBeforeCaret, caretPos);
-
-                String txt = "L: " + lineno  + " | C:" + caretStringLine.length();
+                String columnNo = String.valueOf(caretStringLine.chars().reduce(0, (total, ch) -> total += ch == '\t' ? 4:1));
+                String txt = "L: " + lineno  + " | C:" + columnNo;
                 txtLineNumber.setText(txt);
             }
         });
@@ -69,13 +70,13 @@ public class EditorController {
     }
 
     @FXML
-    private void AbrirArquivo(){
+    private void AbrirArquivo() throws IOException {
         if(!OnMudancaDeArquivo())
             return;
 
         FileChooser fileChooser = new FileChooser();
 
-        String defaultPath =  System.getProperty("user.dir");
+        String defaultPath =  ConfigService.getCaminhoPadrao().toString();
         fileChooser.initialDirectoryProperty().set(new File(defaultPath));
         fileChooser.setTitle("Escolha um arquivo de texto");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
@@ -83,7 +84,8 @@ public class EditorController {
         if(arquivoAtual != null){
             NovoArquivo = false;
             txtCode.setText(LerArquivoParaEditor(arquivoAtual));
-            fileHash = CriarHashDeAlteracao(txtCode.getText());
+            ConfigService.setCaminhoPadrao(Path.of(arquivoAtual.getParent()));
+            fileHash = CryptoService.CriarHashDeAlteracao(txtCode.getText());
             Main.primaryStage.setTitle("Compilador - " + arquivoAtual.getName());
         }else{
 
@@ -98,7 +100,7 @@ public class EditorController {
         txtCodeOutput.setText("");
         Main.primaryStage.setTitle("Compilador");
         arquivoAtual = null;
-        fileHash = CriarHashDeAlteracao("");
+        fileHash = CryptoService.CriarHashDeAlteracao("");
 
         NovoArquivo = true;
     }
@@ -109,7 +111,7 @@ public class EditorController {
 
             if(NovoArquivo){
                 FileChooser fileChooser = new FileChooser();
-                String defaultPath =  System.getProperty("user.dir");
+                String defaultPath =  ConfigService.getCaminhoPadrao().toString();
                 fileChooser.initialDirectoryProperty().set(new File(defaultPath));
                 arquivoAtual = fileChooser.showSaveDialog(Main.primaryStage);
                 if(arquivoAtual == null)
@@ -117,14 +119,14 @@ public class EditorController {
             }
 
             caminhoDoArquivo = arquivoAtual.getAbsolutePath();
-
             String codigo = txtCode.getText();
 
             FileWriter myWriter = new FileWriter(caminhoDoArquivo);
             myWriter.write(codigo);
             myWriter.close();
 
-            fileHash = CriarHashDeAlteracao(codigo);
+            fileHash = CryptoService.CriarHashDeAlteracao(codigo);
+            ConfigService.setCaminhoPadrao(Path.of(arquivoAtual.getParent()));
             NovoArquivo = false;
 
         } catch (IOException e) {
@@ -151,7 +153,7 @@ public class EditorController {
             myWriter.write(codigo);
             myWriter.close();
 
-            fileHash = CriarHashDeAlteracao(codigo);
+            fileHash = CryptoService.CriarHashDeAlteracao(codigo);
             NovoArquivo = false;
 
         } catch (IOException e) {
@@ -214,7 +216,6 @@ public class EditorController {
     }
 
     private String LerArquivoParaEditor(File file) {
-
         try{
             byte[] bytes = Files.readAllBytes(file.toPath());
             return new String(bytes, StandardCharsets.UTF_8);
@@ -224,22 +225,6 @@ public class EditorController {
 
     }
 
-    private String CriarHashDeAlteracao(String dados){
-        try {
-            MessageDigest shaDigest = MessageDigest.getInstance("SHA-256");
-
-            byte[] bytes = shaDigest.digest(dados.getBytes());
-            StringBuilder sb = new StringBuilder();
-            for(int i=0; i< bytes.length ;i++)
-            {
-                sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
-            }
-            return sb.toString();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        return "";
-    }
 
     private boolean OnMudancaDeArquivo(){
         if(ArquivoAlterado()){
@@ -290,6 +275,7 @@ public class EditorController {
     }
 
     private boolean ArquivoAlterado(){
-        return(!fileHash.equals(CriarHashDeAlteracao(txtCode.getText())));
+        String hashDeAlteracao = CryptoService.CriarHashDeAlteracao(txtCode.getText());
+        return(!fileHash.equals(hashDeAlteracao));
     }
 }

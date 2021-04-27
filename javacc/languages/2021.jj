@@ -75,7 +75,7 @@ TOKEN :
     | < BARRA: "/" >
     | < POTENCIA: "**" >
     | < DIVISAOINTEIRA: "%" >
-    | < RESTODIVISAO: "%$" >
+    | < RESTODIVISAO: "%%" >
     | < LOGICOE: "&" >
     | < LOGICOOU: "|" >
     | < IGUALDADE: "==" >
@@ -90,7 +90,7 @@ TOKEN:
   <IDENTIFICADOR: ((<LETRA>)|"_") ( ((<LETRA>)|"_"|(<DIGITO>))? )* >
   | <INTEIROS: (<DIGITO>){1,3} >
   | <FLUTUANTE: (<DIGITO>){1,5}"."(<DIGITO>){1,3}>
-  | <LITERAL: "\"" (~["\""])*"\"" | "\'" (~["\'"])?"\'">
+  | <LITERAL: "\"" (~["\""])*"\"" | "\'" (~["\'"])*"\'">
   | <LETRA: ["A"-"Z","a"-"z"]>
   | <DIGITO: ["0"-"9"]>
   | <LINEBREAK: "\n">
