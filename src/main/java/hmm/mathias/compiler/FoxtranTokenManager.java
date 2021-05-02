@@ -174,7 +174,7 @@ private int jjMoveStringLiteralDfa1_0(long active0){
             jjmatchedPos = 1;
          }
          break;
-      case 36:
+      case 37:
          if ((active0 & 0x100000000000L) != 0L)
          {
             jjmatchedKind = 44;
@@ -742,7 +742,7 @@ private int jjMoveNfa_0(int startState, int curPos)
                   break;
                case 6:
                   if ((0xffffff7fffffffffL & l) != 0L)
-                     { jjCheckNAdd(7); }
+                     { jjCheckNAddTwoStates(6, 7); }
                   break;
                case 7:
                   if (curChar == 39 && kind > 55)
@@ -839,7 +839,7 @@ private int jjMoveNfa_0(int startState, int curPos)
                   { jjAddStates(10, 11); }
                   break;
                case 6:
-                  jjstateSet[jjnewStateCnt++] = 7;
+                  { jjAddStates(12, 13); }
                   break;
                case 8:
                   if ((0x7fffffe07fffffeL & l) != 0L && kind > 56)
@@ -866,7 +866,7 @@ private int jjMoveNfa_0(int startState, int curPos)
                   break;
                case 6:
                   if (jjCanMove_0(hiByte, i1, i2, l1, l2))
-                     jjstateSet[jjnewStateCnt++] = 7;
+                     { jjAddStates(12, 13); }
                   break;
                default : if (i1 == 0 || l1 == 0 || i2 == 0 ||  l2 == 0) break; else break;
             }
@@ -910,7 +910,7 @@ public static final String[] jjstrLiteralImages = {
 "", null, null, null, null, null, null, null, null, null, null, null, null, 
 null, null, null, null, null, null, null, null, null, null, null, null, null, "\50", 
 "\51", "\173", "\175", "\133", "\135", "\73", "\54", "\56", "\74\75", "\41", "\53", 
-"\55", "\52", "\76\75", "\57", "\52\52", "\45", "\45\44", "\46", "\174", "\75\75", 
+"\55", "\52", "\76\75", "\57", "\52\52", "\45", "\45\45", "\46", "\174", "\75\75", 
 "\41\75", "\76", "\74", "\72\55", null, null, null, null, null, null, "\12", };
 protected Token jjFillToken()
 {
@@ -936,7 +936,7 @@ protected Token jjFillToken()
    return t;
 }
 static final int[] jjnextStates = {
-   10, 14, 18, 15, 10, 16, 17, 15, 10, 16, 3, 4, 
+   10, 14, 18, 15, 10, 16, 17, 15, 10, 16, 3, 4, 6, 7, 
 };
 private static final boolean jjCanMove_0(int hiByte, int i1, int i2, long l1, long l2)
 {
@@ -1014,6 +1014,7 @@ public Token getNextToken()
          error_column++;
    }
    if (!EOFSeen) {
+      //input_stream.backup(1);
       error_after = curPos <= 1 ? "" : input_stream.GetImage();
    }
    throw new TokenMgrError(EOFSeen, curLexState, error_line, error_column, error_after, curChar, TokenMgrError.LEXICAL_ERROR);

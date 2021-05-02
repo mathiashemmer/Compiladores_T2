@@ -5,14 +5,31 @@ package hmm.mathias.compiler;
 public class Foxtran implements FoxtranConstants {
     public static void main(String[] args) {
         try {
-            new Foxtran(new java.io.StringReader(args[0])).Programa();
+            new Foxtran(new java.io.StringReader(args[0])).Grammatica();
         } catch (Throwable e) {
             System.out.println("Syntax check failed: " + e.getMessage());
         }
     }
 
-  final public void Programa() throws ParseException {
+  final public void Grammatica() throws ParseException {
+    ComentarioInicial();
+    Programa();
+    IdentificadorFinal();
     jj_consume_token(0);
+}
+
+  final public void ComentarioInicial() throws ParseException {
+    jj_consume_token(DOGSBOLLOCKS);
+    jj_consume_token(IDENTIFICADOR);
+    jj_consume_token(PONTO);
+}
+
+  final public void Programa() throws ParseException {
+    jj_consume_token(PROGRAM);
+}
+
+  final public void IdentificadorFinal() throws ParseException {
+    jj_consume_token(IDENTIFICADOR);
 }
 
   /** Generated Token Manager. */

@@ -14,7 +14,7 @@ package hmm.mathias.compiler;
 public class Foxtran {
     public static void main(String[] args) {
         try {
-            new Foxtran(new java.io.StringReader(args[0])).Programa();
+            new Foxtran(new java.io.StringReader(args[0])).Grammatica();
         } catch (Throwable e) {
             System.out.println("Syntax check failed: " + e.getMessage());
         }
@@ -98,4 +98,18 @@ TOKEN:
 
 
 
-void Programa(): {} { <EOF>}
+void Grammatica(): {} {
+    ComentarioInicial() Programa() IdentificadorFinal() <EOF>
+}
+
+void ComentarioInicial(): {} {
+   <DOGSBOLLOCKS> <IDENTIFICADOR> <PONTO>
+}
+
+void Programa(): {} {
+    <PROGRAM>
+}
+
+void IdentificadorFinal(): {} {
+    <IDENTIFICADOR>
+}

@@ -35,6 +35,9 @@ public class EditorController {
     private TextField txtLineNumber;
 
     @FXML
+    private CheckBox chkMostraTokens;
+
+    @FXML
     private MenuItem mnuNovoArquivo;
     @FXML
     private MenuItem mnuAbrirArquivo;
@@ -84,11 +87,10 @@ public class EditorController {
         if(arquivoAtual != null){
             NovoArquivo = false;
             txtCode.setText(LerArquivoParaEditor(arquivoAtual));
+            txtCodeOutput.clear();
             ConfigService.setCaminhoPadrao(Path.of(arquivoAtual.getParent()));
             fileHash = CryptoService.CriarHashDeAlteracao(txtCode.getText());
             Main.primaryStage.setTitle("Compilador - " + arquivoAtual.getName());
-        }else{
-
         }
     }
     @FXML
@@ -96,8 +98,8 @@ public class EditorController {
         if(!OnMudancaDeArquivo())
             return;
 
-        txtCode.setText("");
-        txtCodeOutput.setText("");
+        txtCode.clear();
+        txtCodeOutput.clear();
         Main.primaryStage.setTitle("Compilador");
         arquivoAtual = null;
         fileHash = CryptoService.CriarHashDeAlteracao("");
@@ -174,47 +176,21 @@ public class EditorController {
             return;
 
         StringReader reader = new StringReader(txtCode.getText());
-
-        FoxtranTokenManager lexicalTester = new FoxtranTokenManager(new JavaCharStream(reader));
-        Token currentToken = null;
-        boolean houveErro = false;
-        do{
-            try{
-                currentToken = lexicalTester.getNextToken();
-
-                if(currentToken.kind == FoxtranTokenManager.EOF || currentToken.kind == FoxtranTokenManager.LINEBREAK)
-                    continue;
-
-                String newLexema = GetTokenType(currentToken) + " '" + currentToken.toString()+ "' em (L:"+currentToken.beginLine+",C:"+currentToken.beginColumn+") ID:" + currentToken.kind + "\n";
-                txtCodeOutput.appendText(newLexema);
-            }catch (TokenMgrError e){
-                txtCodeOutput.appendText(e.getMessage());
-                houveErro = true;
-                continue;
-            }
-        } while(currentToken.kind != FoxtranTokenManager.EOF);
-
-        if(!houveErro){
-            txtCodeOutput.appendText("\n---STATUS---\nCompilacao concluida com sucesso!");
+        FoxtranTokenManager tokenManager = new FoxtranTokenManager(new JavaCharStream(reader));
+        LexicalAnalyst lexicalAnalyst = new LexicalAnalyst(tokenManager, chkMostraTokens.isSelected());
+        lexicalAnalyst.AddSkipToken(FoxtranConstants.LINEBREAK);
+        lexicalAnalyst.LexicalParse();
+        for(String message : lexicalAnalyst.FeedbackMessage){
+            txtCodeOutput.appendText(message);
         }
-    }
 
-    String GetTokenType(Token token){
-        if(token == null)
-            return "";
+        if(lexicalAnalyst.HasError)
+            return;
 
-        int tokenId = token.kind;
-
-        if(tokenId >= 6 && tokenId < 26)
-            return "<PALAVRA RESERVADA>";
-        if(tokenId >= 26 && tokenId < 52)
-            return "<SIMBOLO RESERVADO>";
-
-        //>50
-        return FoxtranConstants.tokenImage[tokenId];
+        txtCodeOutput.appendText("\n---STATUS---\nCompilacao concluida com sucesso!");
 
     }
-
+    
     private String LerArquivoParaEditor(File file) {
         try{
             byte[] bytes = Files.readAllBytes(file.toPath());

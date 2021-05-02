@@ -40,7 +40,7 @@ Essa seção assume que o JDK 14.0.2 já esteja instalado e configurado na máqu
   - **de** *C:\\Users\\MathiasNB\\IdeaProjects\\L2021_Compiler\\src\\main\\java\\hmm\\mathias\\compiler"*
   - **para** *c:\\intellij\projects\compilador\src\\main\\java\\hmm\\mathias\\compiler"*
 - Em um terminal de comando, navegue até a pasta do projeto (ex: *c:\sources\\intellij\compilador*)
-- Rode o comando: java -cp *javacc\target\javacc.jar javacc javacc\languages\2021.jj*
+- Rode o comando: java -cp javacc\target\javacc.jar javacc javacc\languages\2021.jj
 
 Pronto, a linguagem foi compilada e inserida no caminho correto do projeto. Os arquivos estão prontos para serem editados.
 
@@ -54,5 +54,23 @@ Pronto, a linguagem foi compilada e inserida no caminho correto do projeto. Os a
 
 - Na aba do Gradle, rode a task *jpackage*
 - Uma build de um executavel stand-alone será criada em: *camihno_do_projeto\build\out\Compilador*
+
+---
+
+### BNF Para Token de Identificadores
+
+<identificador> ::= <id_letra> | <id_inicia_underline>
+<id_letra> ::= <letra> <id_letra> | <id_inicia_underline> | <id_inicia_digito> | E
+
+<id_underline> ::= <letra> <id_letra> | <digito> <id_digito> | E
+<id_inicia_underline> ::= "_" <id_underline> | "_" E
+
+<id_digito> ::= <letra> <id_letra> | "_" <id_underline>
+<id_inicia_digito> ::= <digito> <id_digito>
+
+
+<letra> ::= [A-Z] | [a-z]
+<digito> ::= [0-9]
+
 
 
