@@ -11,111 +11,109 @@ public interface FoxtranConstants {
   /** End of File. */
   int EOF = 0;
   /** RegularExpression Id. */
-  int PROGRAM = 6;
+  int PROGRAM = 7;
   /** RegularExpression Id. */
-  int DEFINE = 7;
+  int DEFINE = 8;
   /** RegularExpression Id. */
-  int NOT = 8;
+  int NOT = 9;
   /** RegularExpression Id. */
-  int VARIABLE = 9;
+  int VARIABLE = 10;
   /** RegularExpression Id. */
-  int IS = 10;
+  int IS = 11;
   /** RegularExpression Id. */
-  int NATURAL = 11;
+  int NATURAL = 12;
   /** RegularExpression Id. */
-  int REAL = 12;
+  int REAL = 13;
   /** RegularExpression Id. */
-  int CHAR = 13;
+  int CHAR = 14;
   /** RegularExpression Id. */
-  int BOOLEAN = 14;
+  int BOOLEAN = 15;
   /** RegularExpression Id. */
-  int EXECUTE = 15;
+  int EXECUTE = 16;
   /** RegularExpression Id. */
-  int GET = 16;
+  int GET = 17;
   /** RegularExpression Id. */
-  int PUT = 17;
+  int PUT = 18;
   /** RegularExpression Id. */
-  int LOOP = 18;
+  int LOOP = 19;
   /** RegularExpression Id. */
-  int WHILE = 19;
+  int WHILE = 20;
   /** RegularExpression Id. */
-  int DO = 20;
+  int DO = 21;
   /** RegularExpression Id. */
-  int TO = 21;
+  int TO = 22;
   /** RegularExpression Id. */
-  int SET = 22;
+  int SET = 23;
   /** RegularExpression Id. */
-  int VERIFY = 23;
+  int VERIFY = 24;
   /** RegularExpression Id. */
-  int TRUE = 24;
+  int TRUE = 25;
   /** RegularExpression Id. */
-  int FALSE = 25;
+  int FALSE = 26;
   /** RegularExpression Id. */
-  int LPAREN = 26;
+  int LPAREN = 27;
   /** RegularExpression Id. */
-  int RPAREN = 27;
+  int RPAREN = 28;
   /** RegularExpression Id. */
-  int LCOL = 28;
+  int LCOL = 29;
   /** RegularExpression Id. */
-  int RCOL = 29;
+  int RCOL = 30;
   /** RegularExpression Id. */
-  int LCHAVE = 30;
+  int LCHAVE = 31;
   /** RegularExpression Id. */
-  int RCHAVE = 31;
+  int RCHAVE = 32;
   /** RegularExpression Id. */
-  int PONTOVIRGULA = 32;
+  int PONTOVIRGULA = 33;
   /** RegularExpression Id. */
-  int VIRGULA = 33;
+  int VIRGULA = 34;
   /** RegularExpression Id. */
-  int PONTO = 34;
+  int PONTO = 35;
   /** RegularExpression Id. */
-  int MENORIGUAL = 35;
+  int MENORIGUAL = 36;
   /** RegularExpression Id. */
-  int EXCLAMACAO = 36;
+  int EXCLAMACAO = 37;
   /** RegularExpression Id. */
-  int MAIS = 37;
+  int MAIS = 38;
   /** RegularExpression Id. */
-  int MENOS = 38;
+  int MENOS = 39;
   /** RegularExpression Id. */
-  int ASTERISCO = 39;
+  int ASTERISCO = 40;
   /** RegularExpression Id. */
-  int MAIORIGUAL = 40;
+  int MAIORIGUAL = 41;
   /** RegularExpression Id. */
-  int BARRA = 41;
+  int BARRA = 42;
   /** RegularExpression Id. */
-  int POTENCIA = 42;
+  int POTENCIA = 43;
   /** RegularExpression Id. */
-  int DIVISAOINTEIRA = 43;
+  int DIVISAOINTEIRA = 44;
   /** RegularExpression Id. */
-  int RESTODIVISAO = 44;
+  int RESTODIVISAO = 45;
   /** RegularExpression Id. */
-  int LOGICOE = 45;
+  int LOGICOE = 46;
   /** RegularExpression Id. */
-  int LOGICOOU = 46;
+  int LOGICOOU = 47;
   /** RegularExpression Id. */
-  int IGUALDADE = 47;
+  int IGUALDADE = 48;
   /** RegularExpression Id. */
-  int DIFERENCA = 48;
+  int DIFERENCA = 49;
   /** RegularExpression Id. */
-  int MAIORQUE = 49;
+  int MAIORQUE = 50;
   /** RegularExpression Id. */
-  int MENORQUE = 50;
+  int MENORQUE = 51;
   /** RegularExpression Id. */
-  int DOGSBOLLOCKS = 51;
+  int DOGSBOLLOCKS = 52;
   /** RegularExpression Id. */
-  int IDENTIFICADOR = 52;
+  int IDENTIFICADOR = 53;
   /** RegularExpression Id. */
-  int INTEIROS = 53;
+  int INTEIROS = 54;
   /** RegularExpression Id. */
-  int FLUTUANTE = 54;
+  int FLUTUANTE = 55;
   /** RegularExpression Id. */
-  int LITERAL = 55;
+  int LITERAL = 56;
   /** RegularExpression Id. */
-  int LETRA = 56;
+  int LETRA = 57;
   /** RegularExpression Id. */
-  int DIGITO = 57;
-  /** RegularExpression Id. */
-  int LINEBREAK = 58;
+  int DIGITO = 58;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -124,6 +122,7 @@ public interface FoxtranConstants {
   String[] tokenImage = {
     "<EOF>",
     "\" \"",
+    "\"\\n\"",
     "\"\\r\"",
     "\"\\n\\r\"",
     "\"\\t\"",
@@ -180,7 +179,6 @@ public interface FoxtranConstants {
     "<LITERAL>",
     "<LETRA>",
     "<DIGITO>",
-    "\"\\n\"",
   };
 
 }

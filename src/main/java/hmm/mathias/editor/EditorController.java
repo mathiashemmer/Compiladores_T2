@@ -170,7 +170,7 @@ public class EditorController {
     }
 
     @FXML
-    private void Compile(ActionEvent event) throws ParseException {
+    private void Compile(ActionEvent event) {
         txtCodeOutput.setText("");
         if(txtCode.getText().replace(" ", "").replace("\n", "").equals(""))
             return;
@@ -178,7 +178,7 @@ public class EditorController {
         StringReader reader = new StringReader(txtCode.getText());
         FoxtranTokenManager tokenManager = new FoxtranTokenManager(new JavaCharStream(reader));
         LexicalAnalyst lexicalAnalyst = new LexicalAnalyst(tokenManager, chkMostraTokens.isSelected());
-        lexicalAnalyst.AddSkipToken(FoxtranConstants.LINEBREAK);
+
         lexicalAnalyst.LexicalParse();
         for(String message : lexicalAnalyst.FeedbackMessage){
             txtCodeOutput.appendText(message);
@@ -187,10 +187,20 @@ public class EditorController {
         if(lexicalAnalyst.HasError)
             return;
 
-        txtCodeOutput.appendText("\n---STATUS---\nCompilacao concluida com sucesso!");
+        txtCodeOutput.appendText("\n---STATUS---\nCompilacao concluida com sucesso!\n");
+        txtCodeOutput.appendText("\n Iniciando parsing!\n");
+
+        reader = new StringReader(txtCode.getText());
+        Foxtran foxtranParse = new Foxtran(reader);
+        try{
+            foxtranParse.Grammatica();
+        }catch (Exception e){
+            txtCodeOutput.appendText(e.getMessage());
+        }
+
 
     }
-    
+
     private String LerArquivoParaEditor(File file) {
         try{
             byte[] bytes = Files.readAllBytes(file.toPath());

@@ -28,7 +28,7 @@ TOKEN_MGR_DECLS : {
   }
 }
 
-SKIP: { " " | "\r" | "\n\r" | "\t" | "\f" }
+SKIP: { " " | "\n" | "\r" | "\n\r" | "\t" | "\f" }
 
 /*Palavras Reservadas */
 TOKEN [IGNORE_CASE] : {
@@ -93,7 +93,6 @@ TOKEN:
   | <LITERAL: "\"" (~["\""])*"\"" | "\'" (~["\'"])*"\'">
   | <LETRA: ["A"-"Z","a"-"z"]>
   | <DIGITO: ["0"-"9"]>
-  | <LINEBREAK: "\n">
 }
 
 
@@ -107,7 +106,7 @@ void ComentarioInicial(): {} {
 }
 
 void Programa(): {} {
-    <PROGRAM>
+    <PROGRAM> <LCOL> <RCOL>
 }
 
 void IdentificadorFinal(): {} {

@@ -16,6 +16,7 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
 <BorderPane maxWidth="-Infinity" minHeight="480.0" minWidth="720.0" prefHeight="480.0" prefWidth="720.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="hmm.mathias.editor.EditorController">
     <top>
@@ -184,7 +185,10 @@
                 </AnchorPane>
                 <AnchorPane>
                     <children>
-                        <TextArea id="txtCodeOutput" fx:id="txtCodeOutput" layoutX="147.0" layoutY="-54.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="25.0" AnchorPane.rightAnchor="25.0" AnchorPane.topAnchor="5.0" />
+                        <TextArea id="txtCodeOutput" fx:id="txtCodeOutput" layoutX="147.0" layoutY="-54.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="25.0" AnchorPane.rightAnchor="25.0" AnchorPane.topAnchor="5.0">
+                     <font>
+                        <Font name="Monospaced Regular" size="12.0" />
+                     </font></TextArea>
                     </children>
                 </AnchorPane>
             </items>
