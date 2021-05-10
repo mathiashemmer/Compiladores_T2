@@ -236,7 +236,7 @@ void ListaDeIdEConstantes(): {} {
     IdentificadorEConstantes() ListaDeIdEConstantesRecursiva()
 }
 void ListaDeIdEConstantesRecursiva(): {} {
-    (<VIRGULA> IdentificadorEConstantes())?
+    (<VIRGULA> ListaDeIdEConstantes())?
 }
 
 void IdentificadorEConstantes(): {} {
