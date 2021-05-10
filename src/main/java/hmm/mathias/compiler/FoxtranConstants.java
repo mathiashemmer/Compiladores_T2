@@ -114,6 +114,10 @@ public interface FoxtranConstants {
   int LETRA = 57;
   /** RegularExpression Id. */
   int DIGITO = 58;
+  /** RegularExpression Id. */
+  int COMENTARIO_EM_LINHA = 59;
+  /** RegularExpression Id. */
+  int COMENTARIO_EM_MULTILINHA = 60;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -179,6 +183,8 @@ public interface FoxtranConstants {
     "<LITERAL>",
     "<LETRA>",
     "<DIGITO>",
+    "<COMENTARIO_EM_LINHA>",
+    "<COMENTARIO_EM_MULTILINHA>",
   };
 
 }

@@ -3,23 +3,17 @@ package hmm.mathias.editor;
 import hmm.mathias.Main;
 import hmm.mathias.compiler.*;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.fxml.FXML;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.*;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 
 public class EditorController {
@@ -43,33 +37,54 @@ public class EditorController {
     private MenuItem mnuAbrirArquivo;
     @FXML
     private MenuItem mnuSalvarArquivo;
+    @FXML
+    private MenuItem mnuCompilar;
 
     @FXML public void initialize(){
         txtLineNumber.setEditable(false);
         txtCodeOutput.setEditable(false);
 
-        txtCode.setOnKeyReleased(new EventHandler<KeyEvent>() {
-            @Override
-            public void handle(KeyEvent event) {
-                int caretPos = txtCode.getCaretPosition();
-                String toCaret = txtCode.getText().substring(0, caretPos);
-                int lastLBBeforeCaret = Math.max(0, toCaret.lastIndexOf("\n"));
-
-                String lineno = String.valueOf(toCaret.chars().filter(ch -> ch == '\n').count());
-                String caretStringLine = txtCode.getText().substring(lastLBBeforeCaret, caretPos);
-                String columnNo = String.valueOf(caretStringLine.chars().reduce(0, (total, ch) -> total += ch == '\t' ? 4:1));
-                String txt = "L: " + lineno  + " | C:" + columnNo;
-                txtLineNumber.setText(txt);
-            }
+        txtCode.setOnKeyReleased(event -> {
+            ContadorDeLinhasEColunas();
+            AuxiliarDeNovaLinha(event);
         });
 
-        KeyCombination atalhoSalvar = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN);
-        KeyCombination atalhoNovo = new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN);
-        KeyCombination atalhoAbrir = new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN);
+        mnuNovoArquivo.setAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN));
+        mnuAbrirArquivo.setAccelerator(new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN));
+        mnuSalvarArquivo.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN));
+        mnuCompilar.setAccelerator(new KeyCodeCombination(KeyCode.B, KeyCombination.CONTROL_DOWN));
+    }
 
-        mnuNovoArquivo.setAccelerator(atalhoNovo);
-        mnuAbrirArquivo.setAccelerator(atalhoAbrir);
-        mnuSalvarArquivo.setAccelerator(atalhoSalvar);
+    private void ContadorDeLinhasEColunas(){
+        int caretPos = txtCode.getCaretPosition();
+        String toCaret = txtCode.getText().substring(0, caretPos);
+        int lastLBBeforeCaret = Math.max(0, toCaret.lastIndexOf("\n"));
+
+        String lineno = String.valueOf(toCaret.chars().filter(ch -> ch == '\n').count() +1);
+        String caretStringLine = txtCode.getText().substring(lastLBBeforeCaret, caretPos);
+        String columnNo = String.valueOf(caretStringLine.chars().reduce(0, (total, ch) -> total += ch == '\t' ? 4:1));
+        String txt = "L: " + lineno  + " | C:" + columnNo;
+        txtLineNumber.setText(txt);
+    }
+
+    private void AuxiliarDeNovaLinha(KeyEvent event){
+        if(event.getCode() != KeyCode.ENTER || event.getEventType() != KeyEvent.KEY_RELEASED) return;
+        int caretPos = txtCode.getCaretPosition() -1;
+        String toCaret = txtCode.getText().substring(0, caretPos);
+        String afterCaret = txtCode.getText().substring(caretPos+1);
+        int lastLBBeforeCaret = Math.max(0, toCaret.lastIndexOf("\n"));
+        int firstLBAfterCaret = Math.max(0, afterCaret.indexOf("\n")) + toCaret.length();
+        String currentLine = txtCode.getText().substring(lastLBBeforeCaret, firstLBAfterCaret);
+        int tabNumber = currentLine.chars().reduce(0, (total, ch) -> total += ch == '\t' ? 1:0);
+        StringBuilder newCode = new StringBuilder(toCaret);
+        newCode.append("\n");
+
+        for(int i = 0; i < tabNumber; i++)
+            newCode.append("\t");
+
+        newCode.append(afterCaret);
+        txtCode.setText(newCode.toString());
+        txtCode.positionCaret(caretPos+tabNumber+1);
     }
 
     @FXML
@@ -139,16 +154,16 @@ public class EditorController {
     @FXML
     private boolean SalvarArquivoComo(){
         try {
-            String caminhoDoArquivo = "";
+            String caminhoPadrao = ConfigService.getCaminhoPadrao().toString();
 
             FileChooser fileChooser = new FileChooser();
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
+            fileChooser.initialDirectoryProperty().set(new File(caminhoPadrao));
             arquivoAtual = fileChooser.showSaveDialog(Main.primaryStage);
             if(arquivoAtual == null)
                 return false;
 
-            caminhoDoArquivo = arquivoAtual.getAbsolutePath();
-            caminhoDoArquivo += arquivoAtual.getName();
-
+            String caminhoDoArquivo = arquivoAtual.getAbsolutePath();
             String codigo = txtCode.getText();
 
             FileWriter myWriter = new FileWriter(caminhoDoArquivo);
@@ -178,27 +193,38 @@ public class EditorController {
         StringReader reader = new StringReader(txtCode.getText());
         FoxtranTokenManager tokenManager = new FoxtranTokenManager(new JavaCharStream(reader));
         LexicalAnalyst lexicalAnalyst = new LexicalAnalyst(tokenManager, chkMostraTokens.isSelected());
+        //lexicalAnalyst.AddSkipToken(FoxtranConstants.NEW_LINE);
 
         lexicalAnalyst.LexicalParse();
         for(String message : lexicalAnalyst.FeedbackMessage){
-            txtCodeOutput.appendText(message);
+            txtCodeOutput.appendText(message.replace("\n", " ").replace("\t", "") + "\n");
         }
 
-        if(lexicalAnalyst.HasError)
+        if(lexicalAnalyst.HasError){
+            txtCodeOutput.appendText("\n---STATUS---\nOcorreram erros durante a analise lexica. Marque \"Mostrar Tokens\" para mais detalhes");
             return;
+        }
 
-        txtCodeOutput.appendText("\n---STATUS---\nCompilacao concluida com sucesso!\n");
+        txtCodeOutput.appendText("\n---STATUS---\nAnalise lexica concluida com sucesso!\n");
         txtCodeOutput.appendText("\n Iniciando parsing!\n");
 
         reader = new StringReader(txtCode.getText());
         Foxtran foxtranParse = new Foxtran(reader);
+        foxtranParse.printer = (token,erro) -> {
+            StringBuilder msg = new StringBuilder();
+            String linhaCol = "(L: " + token.beginLine + "|C: " + token.beginColumn +") ";
+            msg.append(linhaCol);
+            msg.append(erro);
+            msg.append("\n");
+            txtCodeOutput.appendText(msg.toString());
+        };
         try{
             foxtranParse.Grammatica();
+            txtCodeOutput.appendText("\n---STATUS---\nAnalise sintatica concluida com sucesso!\n");
         }catch (Exception e){
-            txtCodeOutput.appendText(e.getMessage());
+            txtCodeOutput.appendText(e.getMessage() + "\n");
+            txtCodeOutput.appendText("Ocorreu um erro durante a compilacao do codigo!\n");
         }
-
-
     }
 
     private String LerArquivoParaEditor(File file) {

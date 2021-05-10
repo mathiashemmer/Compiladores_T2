@@ -42,7 +42,7 @@
                         </Menu>
                         <Menu mnemonicParsing="false" text="Compilação">
                             <items>
-                                <MenuItem mnemonicParsing="false" onAction="#Compile" text="Compilar" />
+                                <MenuItem fx:id="mnuCompilar" mnemonicParsing="false" onAction="#Compile" text="Compilar" />
                                 <MenuItem mnemonicParsing="false" text="Executar" />
                             </items>
                         </Menu>

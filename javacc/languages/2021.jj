@@ -2,7 +2,6 @@ options {
   JAVA_UNICODE_ESCAPE = true;
   ERROR_REPORTING = false;
   STATIC = false;
-  COMMON_TOKEN_ACTION = true;
   TOKEN_FACTORY = "Token";
   JDK_VERSION = "1.14";
   OUTPUT_DIRECTORY = "C:\\Users\\MathiasNB\\IdeaProjects\\L2021_Compiler\\src\\main\\java\\hmm\\mathias\\compiler";
@@ -12,23 +11,18 @@ PARSER_BEGIN(Foxtran)
 package hmm.mathias.compiler;
 
 public class Foxtran {
-    public static void main(String[] args) {
-        try {
-            new Foxtran(new java.io.StringReader(args[0])).Grammatica();
-        } catch (Throwable e) {
-            System.out.println("Syntax check failed: " + e.getMessage());
-        }
+    public PrintInterface printer;
+
+    void error_skipto(String error, int[] kind) throws ParseException{
+      printer.print(token, error);
     }
 }
 
 PARSER_END(Foxtran)
 
-TOKEN_MGR_DECLS : {
-  void CommonTokenAction(Token token) {
-  }
-}
-
-SKIP: { " " | "\n" | "\r" | "\n\r" | "\t" | "\f" }
+SKIP: {
+ " " | "\n" | "\r" | "\n\r" | "\t" | "\f"
+ }
 
 /*Palavras Reservadas */
 TOKEN [IGNORE_CASE] : {
@@ -95,18 +89,247 @@ TOKEN:
   | <DIGITO: ["0"-"9"]>
 }
 
+ SPECIAL_TOKEN :
+ {
+     <COMENTARIO_EM_LINHA: "#" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>
+     | <COMENTARIO_EM_MULTILINHA: "@#" (~["#"])* "#" (~["#","@"] (~["#"])* "#" | "#")* "@">
+ }
 
+void BOOLEANO(): {} {
+    <TRUE> | <FALSE>
+}
 
 void Grammatica(): {} {
-    ComentarioInicial() Programa() IdentificadorFinal() <EOF>
+    (ComentarioInicial())? Programa() IdentificadorFinal() <EOF>
 }
 
 void ComentarioInicial(): {} {
-   <DOGSBOLLOCKS> <IDENTIFICADOR> <PONTO>
-}
+ <DOGSBOLLOCKS> (<IDENTIFICADOR>)* <PONTO>
+ }
 
 void Programa(): {} {
-    <PROGRAM> <LCOL> <RCOL>
+ <PROGRAM> <LCOL> Define() Corpo() <RCOL>
+ }
+
+void Define(): {} {
+ (<DEFINE> <LCOL> VariavelOuConstante() <RCOL>)?
+ }
+
+void VariavelOuConstante(): {} {
+ <VARIABLE> DeclaraVariavel() DeclaraConstanteOpcional() |
+ <NOT> <VARIABLE> DeclaraConstante() DeclaraVariavelOpcional()
+}
+
+void DeclaraConstanteOpcional(): {} {
+    (<NOT> <VARIABLE> DeclaraConstante())?
+}
+
+void DeclaraVariavelOpcional(): {} {
+    (<VARIABLE> DeclaraVariavel())?
+}
+
+void DeclaraConstante(): {} {
+    <NATURAL>   <IS> <IDENTIFICADOR> ConstanteInteiroOuErro()   ConstanteRecursiva() <PONTO> ConstanteOpcional() |
+    <REAL>      <IS> <IDENTIFICADOR> ConstanteRealOuErro()      ConstanteRecursiva() <PONTO> ConstanteOpcional() |
+    <CHAR>      <IS> <IDENTIFICADOR> ConstanteLiteralOuErro()   ConstanteRecursiva() <PONTO> ConstanteOpcional() |
+    <BOOLEAN>   <IS> <IDENTIFICADOR> ConstanteBooleanoOuErro()  ConstanteRecursiva() <PONTO> ConstanteOpcional()
+}
+void ConstanteInteiroOuErro():{}{
+    try{
+        <INTEIROS>
+    }
+    catch(ParseException e){
+        int[] follow = {PONTO, VIRGULA};
+        error_skipto("Encontrado " + getToken(1).image + " mas era esperado um Inteiro", follow);
+    }
+}
+void ConstanteRealOuErro():{}{
+    try{
+        <FLUTUANTE>
+    }
+    catch(ParseException e){
+        int[] follow = {PONTO, VIRGULA};
+        error_skipto("Encontrado " + getToken(1).image + " mas era esperado um Real", follow);
+    }
+}
+void ConstanteLiteralOuErro():{}{
+    try{
+        <LITERAL>
+    }
+    catch(ParseException e){
+        int[] follow = {PONTO, VIRGULA};
+        error_skipto("Encontrado " + getToken(1).image + " mas era esperado um Literal", follow);
+    }
+}
+void ConstanteBooleanoOuErro():{}{
+    try{
+        BOOLEANO()
+    }
+    catch(ParseException e){
+        int[] follow = {PONTO, VIRGULA};
+        error_skipto("Encontrado " + getToken(1).image + " mas era esperado um Booleano", follow);
+    }
+}
+
+void ConstanteRecursiva(): {} {
+    (<VIRGULA> <IDENTIFICADOR> ConstanteRecursiva() )?
+}
+
+void ConstanteOpcional(): {} {
+    (DeclaraConstante())?
+}
+
+void DeclaraVariavel(): {} {
+        <NATURAL>   <IS> <IDENTIFICADOR> VariavelArrayOpcional() VariavelRecursiva() <PONTO> VariavelOpcional() |
+        <REAL>      <IS> <IDENTIFICADOR> VariavelArrayOpcional() VariavelRecursiva() <PONTO> VariavelOpcional() |
+        <CHAR>      <IS> <IDENTIFICADOR> VariavelArrayOpcional() VariavelRecursiva() <PONTO> VariavelOpcional() |
+        <BOOLEAN>   <IS> <IDENTIFICADOR> VariavelArrayOpcional() VariavelRecursiva() <PONTO> VariavelOpcional()
+}
+
+void VariavelRecursiva(): {}{
+    (<VIRGULA> <IDENTIFICADOR> VariavelArrayOpcional() VariavelRecursiva())?
+}
+
+void VariavelArrayOpcional(): {} {
+    (<LCHAVE> <INTEIROS> <RCHAVE>)?
+}
+
+void VariavelOpcional(): {} {
+    (DeclaraVariavel())?
+}
+
+void Corpo(): {} {
+    <EXECUTE> <LCOL> ListaDeComandos() <RCOL>
+}
+
+void ListaDeComandos(): {} {
+    Comandos() <PONTO> ListaDeComandosOpcional()
+}
+void ListaDeComandosOpcional(): {} {
+    (ListaDeComandos())?
+}
+
+void Comandos(): {} {
+    ComandoSet() | ComandoGet() | ComandoPut() | ComandoVerify() | ComandoIterador()
+}
+
+void ComandoSet(): {} {
+    <SET> Expressao() <TO> ListaDeIdentificadores()
+}
+
+void ComandoGet(): {} {
+    <GET> <LCOL> ListaDeIdentificadores() <RCOL>
+}
+
+void ListaDeIdentificadores(): {} {
+    <IDENTIFICADOR> ListaDeIdentificadoresRecursivo()
+}
+void ListaDeIdentificadoresRecursivo(): {} {
+    (<VIRGULA> ListaDeIdentificadores())?
+}
+
+void ComandoPut(): {} {
+    <PUT> <LCOL> ListaDeIdEConstantes() <RCOL>
+}
+
+void ListaDeIdEConstantes(): {} {
+    IdentificadorEConstantes() ListaDeIdEConstantesRecursiva()
+}
+void ListaDeIdEConstantesRecursiva(): {} {
+    (<VIRGULA> IdentificadorEConstantes())?
+}
+
+void IdentificadorEConstantes(): {} {
+    <IDENTIFICADOR> | <LITERAL> | <INTEIROS> | <FLUTUANTE>
+}
+
+void ComandoVerify(): {} {
+    Expressao()  ComandoVerifyInicio()
+}
+void ComandoVerifyInicio(): {} {
+    LOOKAHEAD(2)
+    ComandoVerifyInicioIsTrue() | ComandoVeiryfInicioIsFalse()
+}
+void ComandoVerifyInicioIsTrue(): {} {
+    <IS> <TRUE> <LCOL> ListaDeComandos() <RCHAVE> (ComandoVerifyInicioIsTrueElse())?
+}
+void ComandoVerifyInicioIsTrueElse(): {} {
+    <IS> <FALSE> <LCOL> ListaDeComandos() <RCOL>
+}
+void ComandoVeiryfInicioIsFalse(): {} {
+    <IS> <FALSE> <LCOL> ListaDeComandos() <RCOL> (ComandoVerifyInicioIsTrueElse())?
+}
+void ComandoVerifyInicioIsFalseElse(): {} {
+    <IS> <TRUE> <LCOL> ListaDeComandos() <RCOL>
+}
+
+void ComandoIterador(): {} {
+    ComandoIteradorLoop() | ComandoIteradorWhile()
+}
+void ComandoIteradorLoop(): {} {
+     <LOOP> <LCOL> ListaDeComandos() <RCOL> <WHILE> Expressao() <IS> <TRUE>
+}
+void ComandoIteradorWhile(): {} {
+     <WHILE> Expressao() <IS> <TRUE> <DO> <LCOL>  ListaDeComandos() <RCOL>
+}
+
+void Expressao(): {} {
+    (ExpressaoLogicaOuAritimetica())?  ExpressaoContinuacao()
+}
+
+void ExpressaoContinuacao(): {} {
+    <IGUALDADE>  (ExpressaoLogicaOuAritimetica())? |
+    <DIFERENCA> (ExpressaoLogicaOuAritimetica())? |
+    <MAIORQUE> (ExpressaoLogicaOuAritimetica())? |
+    <MENORQUE> (ExpressaoLogicaOuAritimetica())? |
+    <MAIORIGUAL> (ExpressaoLogicaOuAritimetica())? |
+    <MENORIGUAL> (ExpressaoLogicaOuAritimetica())?
+}
+
+void ExpressaoLogicaOuAritimetica(): {} {
+    TermoDois() (MenorPrioridade())?
+}
+
+void MenorPrioridade(): {} {
+    <MAIS> MenorPrioridade() |
+    <MENOS> MenorPrioridade() |
+    <LOGICOOU> MenorPrioridade()
+}
+
+void TermoDois(): {} {
+    TermoUm() (MediaPrioridade())?
+}
+
+void MediaPrioridade(): {} {
+    <ASTERISCO> (MediaPrioridade())? |
+    <BARRA> (MediaPrioridade())? |
+    <DIVISAOINTEIRA> (MediaPrioridade())? |
+    <RESTODIVISAO> (MediaPrioridade())? |
+    <LOGICOE> (MediaPrioridade())?
+}
+
+void TermoUm():{} {
+    Elemento() (MaiorPrioridde())?
+}
+
+void MaiorPrioridde(): {} {
+    <POTENCIA> Elemento() (MaiorPrioridde())?
+}
+
+void Elemento(): {} {
+    <IDENTIFICADOR> (Indice())? |
+    <FLUTUANTE> |
+    <INTEIROS> |
+    <LITERAL> |
+    <TRUE> |
+    <FALSE> |
+    <LPAREN> Expressao() <RPAREN> |
+    <EXCLAMACAO> <LPAREN> Expressao() <RPAREN>
+
+}
+
+void Indice(): {} {
+    <LCHAVE> <INTEIROS> <RCHAVE>
 }
 
 void IdentificadorFinal(): {} {

@@ -43,15 +43,10 @@ public class LexicalAnalyst {
                 if(SkipTokens.contains(currentToken.kind))
                     continue;
                 if(LogSuccess){
-                    String token = String.format("'%s'",  currentToken.toString());
-                    String lineCol = String.format("em (L:%s,C:%s)", currentToken.beginLine, currentToken.beginColumn);
+                    if(currentToken.specialToken != null)
+                        AdicionarMensagemDeToken(currentToken.specialToken);
 
-                    StringBuilder newEntry = new StringBuilder(String.format("%-22s", GetTokenType(currentToken)))
-                            .append(String.format("%-10s", token))
-                            .append(String.format(" %-20s", lineCol))
-                            .append(String.format(" ID: %s \n", currentToken.kind));
-
-                    FeedbackMessage.add(newEntry.toString());
+                    AdicionarMensagemDeToken(currentToken);
                 }
             }catch (TokenMgrError tokenError){
                 FeedbackMessage.add(tokenError.getMessage());
@@ -61,15 +56,27 @@ public class LexicalAnalyst {
         }while(currentToken.kind != FoxtranConstants.EOF);
     }
 
+    private void AdicionarMensagemDeToken(Token currentToken){
+        String token = String.format("'%s'",  currentToken.toString());
+        String lineCol = String.format("em (L:%s,C:%s)", currentToken.beginLine, currentToken.beginColumn);
+
+        StringBuilder newEntry = new StringBuilder(String.format("%-22s", GetTokenType(currentToken)))
+                .append(String.format("%-10s", token))
+                .append(String.format(" %-20s", lineCol))
+                .append(String.format(" ID: %s", currentToken.kind));
+
+        FeedbackMessage.add(newEntry.toString());
+    }
+
     private String GetTokenType(Token token){
         if(token == null)
             return "";
 
         int tokenId = token.kind;
 
-        if(tokenId >= 6 && tokenId < 26)
+        if(tokenId >= 6 && tokenId <= 26)
             return "<PALAVRA RESERVADA>";
-        if(tokenId >= 26 && tokenId <= 52)
+        if(tokenId > 26 && tokenId <= 52)
             return "<SIMBOLO RESERVADO>";
 
         //>50
