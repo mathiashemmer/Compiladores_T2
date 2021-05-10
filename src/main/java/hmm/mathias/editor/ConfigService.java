@@ -42,6 +42,7 @@ public class ConfigService {
                 solvedPath = dados[1].replace(" ", "");
             }
         }
-        return Path.of(solvedPath);
+        Path path = Path.of(solvedPath);
+        return Files.exists(path) ? path : Path.of(defaultPath);
     }
 }
